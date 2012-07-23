@@ -33,6 +33,7 @@ my %WriteMakefileArgs = (
     "DateTimeX::Easy" => 0,
     "File::HomeDir" => 0,
     "Geo::Location::TimeZone" => 0,
+    "Math::Polygon" => 0,
     "Math::Trig" => 0,
     "Mojo::UserAgent" => 0,
     "Moose" => 0,
