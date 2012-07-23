@@ -20,6 +20,8 @@ my @URLS   = ('/tide/m/WA.html');
 
 my $TD = Tidal::Data->new;
 
+$|++;
+
 foreach my $url ( @URLS ) {
 	process_url($url);
 }
