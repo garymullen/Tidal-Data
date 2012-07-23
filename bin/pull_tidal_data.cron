@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+#
+# Todo: Delete records older than X days.
+#
+
+# ABSTRACT: Pulls tidal data hosted on the University of South Carolina Tide Predictor site and stores in a local database. This is expected to be run daily.
+# PODNAME: pull_updates
+
+use strict;
+use warnings;
+
+use lib qw( lib );
+
+use Mojo::UserAgent;
+use Tidal::Data;
+use Tidal::Data::Parser;
+
+my $DOMAIN = 'tbone.biol.sc.edu';
+my @URLS   = ('/tide/m/WA.html');
+
+my $TD = Tidal::Data->new;
+
+foreach my $url ( @URLS ) {
+	process_url($url);
+}
+
+
+sub process_url {
+	my $url = shift;
+
+	my $ua = Mojo::UserAgent->new->connect_timeout(2);
+
+	my $tx = $ua->get($DOMAIN.$url);
+	if ( ! $tx->success ) {
+	        my ($message, $code) = $tx->error;
+	        print "Error: $message\n";
+	        exit;
+	}
+
+	$tx->res->dom->find('a[href^="/tide/tideshow"]')->each(sub {
+		my $a = shift;
+		return if ( $a->text =~ m/Current(\ \(.+?\))?$/);  # Skip current data, we're just tidal
+		print ".";
+		process_location_data($ua, $a->{href});
+	} );
+	print "\n";
+}
+
+
+sub process_location_data {
+        my ($ua, $path) = @_;
+
+        my $tx = $ua->get($DOMAIN.$path);
+        if ( ! $tx->success ) {
+
+                my ($message, $code) = $tx->error;
+                print "Error: $message\n";
+                exit;
+        }
+
+        my $parser = Tidal::Data::Parser->new( dom => $tx->res->dom );
+	my $schema = $TD->schema;
+
+	my $l = $schema->resultset('Location')->search({ name => $parser->name })->first ||
+			$schema->resultset('Location')->create({
+				name      => $parser->name,
+				longitude => $parser->longitude,
+				latitude  => $parser->latitude
+			});
+
+	foreach my $e ( $parser->get_records ) {
+		my $data = {
+			location_id => $l->id,
+			epoch       => $e->{epoch},
+			tide_type   => $e->{type},
+		};
+
+		my $row = $schema->resultset('LocationEntry')->find( $data ) ||
+			$schema->resultset('LocationEntry')->new( $data );
+
+		$row->level($e->{level});
+
+		$row->insert_or_update;
+	}
+}
+
+
+
+__END__
+=pod
+
+=head1 NAME
+
+pull_updates - Pulls tidal data hosted on the University of South Carolina Tide Predictor site and stores in a local database. This is expected to be run daily.
+
+=head1 VERSION
+
+version 0.002
+
+=head1 AUTHOR
+
+Gary Mullen <garymullen@gmail.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2012 by Gary Mullen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+

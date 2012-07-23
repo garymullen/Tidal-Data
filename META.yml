@@ -1,0 +1,33 @@
+---
+abstract: 'Provides access to tidal data stored in the tidal_data DB.'
+author:
+  - 'Gary Mullen <garymullen@gmail.com>'
+build_requires:
+  Mojo::DOM: 0
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.30
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.300018, CPAN::Meta::Converter version 2.120921'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Tidal-Data
+requires:
+  DBIx::Class::Candy: 0
+  DBIx::Class::ResultSet: 0
+  DBIx::Class::Schema: 0
+  DateTime: 0
+  DateTimeX::Easy: 0
+  File::HomeDir: 0
+  Geo::Location::TimeZone: 0
+  Math::Trig: 0
+  Mojo::UserAgent: 0
+  Moose: 0
+  SQL::Translator: 0.11010
+  base: 0
+  strict: 0
+  utf8: 0
+  warnings: 0
+version: 0.002

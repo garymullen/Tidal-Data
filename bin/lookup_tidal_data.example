@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Example of how to lookup tidal information from Tidal::Data.
+
+# PODNAME: lookup_data
+
+use strict;
+use warnings;
+
+use lib qw( lib );
+use Tidal::Data;
+
+my $td = Tidal::Data->new;
+
+my $lat = $ARGV[0] || 45.583;
+my $lon = $ARGV[1] || -122.660;
+
+foreach my $r ( @{ $td->find($lat, $lon) } ) {
+	if ( $r->has_error ) {
+		print 'Error: '.$r->error."\n";
+		last;
+	}
+
+	print join(' ', map { $r->$_ } qw/ location_name latitude longitude time info /)."\n";
+}
+
+
+__END__
+=pod
+
+=head1 NAME
+
+lookup_data - Example of how to lookup tidal information from Tidal::Data.
+
+=head1 VERSION
+
+version 0.002
+
+=head1 AUTHOR
+
+Gary Mullen <garymullen@gmail.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2012 by Gary Mullen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
