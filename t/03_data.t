@@ -1,6 +1,17 @@
-use Test::More tests => 4;
+#!/usr/bin/env perl
+use Test::More tests => 5;
 use strict;
 use warnings;
+
+# We need to stub out the clock before we 'use' the code that uses the clock;
+# in this case, we set up our intention to control time() before loading
+# Tidal::Data.
+our $mock_time;
+BEGIN {
+  *CORE::GLOBAL::time = sub () {
+    defined $mock_time ? $mock_time : CORE::time;
+  };
+}
 
 use Tidal::Data;
 use Tidal::Data::Entry;
@@ -31,7 +42,11 @@ my $r = Tidal::Data::Entry->new(
 );
 is_deeply($TD->find(48, -122, 1342202820)->[0], $r, 'Tidal data');
 
-is($TD->find(46, -123, 1342202820)->[0]->location_name, 'Harrington Point, Washington', 'find_closest')
+{
+  local $mock_time = 1342202820;
+  is( time, $mock_time, "We're in charge of the clock now" );
+  is($TD->find(46, -123)->[0]->location_name, 'Harrington Point, Washington', 'find_closest');
+}
 
 
 __DATA__
